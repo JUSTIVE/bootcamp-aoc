@@ -22,7 +22,7 @@ module MathUtil = {
 }
 
 module Domain = {
-  type seatInfo = {
+  type seat = {
     row: int,
     column: int,
   }
@@ -60,11 +60,11 @@ module Domain = {
     ->Node.Fs.readFileAsUtf8Sync
     ->Js_string2.split("\n")
 
-  let processSeatID = (seatInfo: seatInfo): int => 
-    seatInfo.row * 8 + seatInfo.column
+  let processSeatID = (seat: seat): int => 
+    seat.row * 8 + seat.column
 
-  let parseBoardingPass = (boardingPass:string): seatInfo => {
-    let seatInfo:seatInfo = {
+  let parseBoardingPass = (boardingPass:string): seat => {
+    let seat:seat = {
       row: (
           boardingPass
           ->Js_string.slice(~from=0, ~to_=7)
@@ -76,7 +76,7 @@ module Domain = {
           ->parseBinaryString({upperBound: "R", lowerBound: "L"})
       )
     }
-    seatInfo
+    seat
   }
 
   let takeFirst = (x)=>
@@ -107,9 +107,10 @@ module Domain = {
     
 
   let solution = (filePath: string) =>
-    readFileLine(filePath)
+    filePath
+    ->readFileLine
     ->solutionCore
- 
+
 
   module DomainTest = {
     let parseBinaryStringTest = {
