@@ -1,0 +1,1 @@
+module Bar = Foo_Bar

@@ -1,24 +1,26 @@
 open Belt
 
-module Test = {
+// 1. 데이터의 흐르밍 보이도록 map, filter, reduce 로 리팩토링 해보기
+// let makeGrid: input -> grid
+// let move: slant -> grid -> array<coord>
+// let count: array<coord> -> int
+// (input)->map(makeGrid)->map(move(slant))->reduce(count)
+//
+// 2. 함수 시그니처를 먼저 작성하고 구현해보기
 
-  type expect<'a> = (string,'a,'a)=>unit
-  let expect:expect<'a> = (name, expected:'a,actual:'a) => {
+module Test = {
+  type expect<'a> = (string, 'a, 'a) => unit
+  let expect: expect<'a> = (name, expected: 'a, actual: 'a) => {
     switch actual {
-    | x if x === expected=> `${name} -- Pass ✅`
+    | x if x === expected => `${name} -- Pass ✅`
     | __ => `${name} -- Fail ❌`
-    }
-    ->Js.log
-  };
+    }->Js.log
+  }
 }
 module MathUtil = {
-  let sum = (value: array<int>): int => 
-    value
-    ->Array.reduce(0, (a: int, b: int) => a + b)
+  let sum = (value: array<int>): int => value->Array.reduce(0, (a: int, b: int) => a + b)
 
-  let max = (value): int => 
-    value->
-    Array.reduce(0, (a, b) => a > b ? a : b)
+  let max = (value): int => value->Array.reduce(0, (a, b) => a > b ? a : b)
 }
 
 module Domain = {
@@ -50,82 +52,56 @@ module Domain = {
     ->Js.Array.reverseInPlace
     ->Array.map(applyMapper(arbitraryBinaryMatcherPattern))
     ->Array.mapWithIndex((i, x) =>
-      Js.Math.pow_float(~base=2.0, ~exp=i->Int.toFloat)
-      ->Float.toInt * x
+      Js.Math.pow_float(~base=2.0, ~exp=i->Int.toFloat)->Float.toInt * x
     )
     ->MathUtil.sum
 
   let readFileLine = (filePath): array<string> =>
-    filePath
-    ->Node.Fs.readFileAsUtf8Sync
-    ->Js_string2.split("\n")
+    filePath->Node.Fs.readFileAsUtf8Sync->Js_string2.split("\n")
 
-  let processSeatID = (seatInfo: seatInfo): int => 
-    seatInfo.row * 8 + seatInfo.column
+  let processSeatID = (seatInfo: seatInfo): int => seatInfo.row * 8 + seatInfo.column
 
-  let parseBoardingPass = (boardingPass:string): seatInfo => {
-    let seatInfo:seatInfo = {
-      row: (
-          boardingPass
-          ->Js_string.slice(~from=0, ~to_=7)
-          ->parseBinaryString({upperBound: "B", lowerBound: "F"})
-      ),
-      column: (
-          boardingPass
-          ->Js_string.slice(~from=7, ~to_=10)
-          ->parseBinaryString({upperBound: "R", lowerBound: "L"})
-      )
+  let parseBoardingPass = (boardingPass: string): seatInfo => {
+    let seatInfo: seatInfo = {
+      row: boardingPass
+      ->Js_string.slice(~from=0, ~to_=7)
+      ->parseBinaryString({upperBound: "B", lowerBound: "F"}),
+      column: boardingPass
+      ->Js_string.slice(~from=7, ~to_=10)
+      ->parseBinaryString({upperBound: "R", lowerBound: "L"}),
     }
     seatInfo
   }
 
-  let solutionCore = (fileContent)=>
-    fileContent
-    ->Array.map(parseBoardingPass)
-    ->Array.map(processSeatID)
-    ->MathUtil.max
+  let solutionCore = fileContent =>
+    fileContent->Array.map(parseBoardingPass)->Array.map(processSeatID)->MathUtil.max
 
-  let solution = (filePath: string) =>
-    readFileLine(filePath)
-    ->solutionCore
+  let solution = (filePath: string) =>filePath-> readFileLine->solutionCore
 
   module DomainTest = {
     let parseBinaryStringTest = {
       Test.expect(
         "parseBinaryString",
         70,
-        parseBinaryString("BFFFBBF", {upperBound: "B", lowerBound: "F"})
-      );
+        parseBinaryString("BFFFBBF", {upperBound: "B", lowerBound: "F"}),
+      )
       Test.expect(
         "parseBinaryString",
         14,
-        parseBinaryString("FFFBBBF", {upperBound: "B", lowerBound: "F"})
-      );
+        parseBinaryString("FFFBBBF", {upperBound: "B", lowerBound: "F"}),
+      )
       Test.expect(
         "parseBinaryString",
         102,
-        parseBinaryString("BBFFBBF", {upperBound: "B", lowerBound: "F"})
-      );
+        parseBinaryString("BBFFBBF", {upperBound: "B", lowerBound: "F"}),
+      )
     }
     let solutionCoreTest = {
-      Test.expect(
-        "parseBoardingPass",
-        567,
-        solutionCore(["BFFFBBFRRR"])
-      );
-      Test.expect(
-        "parseBoardingPass",
-        119,
-        solutionCore(["FFFBBBFRRR"])
-      )
-      Test.expect(
-        "parseBoardingPass",
-        820,
-        solutionCore(["BBFFBBFRLL"])
-      )
+      Test.expect("parseBoardingPass", 567, solutionCore(["BFFFBBFRRR"]))
+      Test.expect("parseBoardingPass", 119, solutionCore(["FFFBBBFRRR"]))
+      Test.expect("parseBoardingPass", 820, solutionCore(["BBFFBBFRLL"]))
     }
   }
 }
 
-Domain.solution("input/Week1/Year2020Day5.sample.txt")
-->Js.log
+Domain.solution("input/Week1/Year2020Day5.sample.txt")->Js.log
