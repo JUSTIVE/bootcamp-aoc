@@ -1,4 +1,4 @@
-open Common
+open D5Common
 
 let parseBinaryStringTest = {
   let patternBF = arbitraryBinaryMatcherPattern("B", "F")
