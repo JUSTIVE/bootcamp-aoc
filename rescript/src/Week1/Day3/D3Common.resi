@@ -1,7 +1,11 @@
 type slant
-type size
+type gridSize
 type grid
 
-let genGrid: string=>grid
+let slant_: (int, int) => slant
 
-let solution:(slant,string)=>int
+let gridSize_: array<string> => gridSize
+
+let grid_: string => grid
+
+let potentialCollisionCount: (slant, grid) => int
