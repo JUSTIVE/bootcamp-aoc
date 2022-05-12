@@ -55,6 +55,16 @@ type Empty = CellTypeApplier<"Empty", ".">
 
 type Cell = Tree | Empty
 
+type Tree= {
+  cellType: "Tree",
+  value: "#"
+}
+
+type Empty ={
+  cellType: "Empty",
+  value: "."
+}
+
 type GridSize = {
   width: number,
   height: number
@@ -162,9 +172,10 @@ function solution(filePath: string): (slant: Slant) => number {
   function resolve(grid: Grid): (slant: Slant) => number {
     return function (slant: Slant): number {
       return grid
-        .cells
-        .filter((_, i) => i % slant.dy === 0)
-        .map((x, i) => x[(i * slant.dx) % grid.meta.size.width])
+        .cells // Cell[][]
+        .filter((_, i) => i % slant.dy === 0) // Cell[][]
+        .map((x, i) => x[(i * slant.dx) % grid.meta.size.width]) 
+        // Cell[] | undefined
         .filter(x=>x)
         .filter(x => x.cellType === "Tree")
         .length
