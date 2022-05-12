@@ -1,0 +1,43 @@
+1. 데이터 모델링
+
+# TobogganMap 모듈
+
+module TobogganMap = {
+  type t
+  let make: string => t
+  let width: t => int
+  let height: t => int
+}
+
+# Toboggan 모듈
+
+
+type person = {
+  name:string
+  weight: int
+}
+
+// a.res
+type animal ={
+  name:string,
+  weight: int
+}
+
+
+// a.resi
+type animal
+
+// b.res
+module type Creature = {
+  type animal
+}
+
+module Creature = {
+  type animal ={
+    name:string,
+    weight: int
+  }
+}
+
+리스트 [] -> list{}
+배열 [||] -> []

@@ -22,3 +22,6 @@ let test = () => {
 }
 
 test()
+
+// 1. 파싱을 "\n\n" split 해서 개선해본다.
+// 2. part1: parse -> union -> length, part2: parse -> intersection -> length
