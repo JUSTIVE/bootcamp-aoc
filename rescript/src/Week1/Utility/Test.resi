@@ -1,1 +1,1 @@
-let expect: (string, 'a, 'a) => unit
+let expectInt: (string, int, int) => unit
