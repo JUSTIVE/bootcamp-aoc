@@ -1,4 +1,4 @@
-let gatherYes: array<string> => int
+// let gatherYes: array<string> => int
 
 let solution: string => int
 
