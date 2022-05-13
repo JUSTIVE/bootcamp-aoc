@@ -1,7 +1,7 @@
 open Belt
 open D1Common
 open FileReader
-open Triple
+open TTriple
 
 let solution = filePath =>
   filePath

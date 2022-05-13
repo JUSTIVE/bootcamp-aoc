@@ -19,4 +19,4 @@ let triplize = args =>
   })
   ->Array.concatMany
 
-let isTripleSumThatYear = (triple, year) => triple->Triple.sumSelf === year
+let isTripleSumThatYear = (triple, year) => triple->TTriple.sumSelf === year
