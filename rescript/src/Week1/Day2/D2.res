@@ -1,5 +1,7 @@
 open Belt
 
+let _ = Belt.Map.cmp
+
 type rule = {
   least: int,
   most: int,
@@ -16,7 +18,10 @@ let safeSplit = (string, delim) =>
   | __ => ("", "")
   }
 
+
+
 let parse = line => {
+  // 리스크립트 Regex 리팩토링 해보기
   let (prefix, value) = line->safeSplit(": ")
   let (prefix, kind) = prefix->safeSplit(" ")
   let (least, most) = prefix->safeSplit("-")
@@ -31,6 +36,28 @@ let parse = line => {
   }
 }
 
+//1-3 a: abcde
+//1-3 b: cdefg
+//2-9 c: ccccccccc
+
+let rule1 = {
+  least :2,
+  most:9,
+  kind: "a"
+}
+
+let rule2 ={
+  least:2,
+  most:9,
+  kind: "a"
+}
+
+let _ = rule1==rule2
+
+let foo = "a"
+let bar = "a"
+let _ = foo == bar
+
 let process1 = ({rule, value}) =>
   value->SString.count(rule.kind)->MMath.Int.inRange(rule.least, rule.most)
 
@@ -41,7 +68,12 @@ let process2 = ({rule, value}) =>
   )
 
 let goal1 = filePath =>
-  filePath->FileReader.readFileLine->Array.map(parse)->Array.keep(process1)->Array.length->Js.log
+  filePath
+  ->FileReader.readFileLine
+  ->Array.map(parse)
+  ->Array.keep(process1)
+  ->Array.length
+  ->Js.log
 
 let goal2 = filePath =>
   filePath
