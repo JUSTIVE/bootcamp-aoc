@@ -6,13 +6,12 @@ open PPair
 let solution = filePath =>
   filePath
   ->readFileLine
-  ->Array.map(Int.fromString)
-  ->Array.keep(Option.isSome)
-  ->Array.map(Option.getExn)
+  ->Array.keepMap(Int.fromString)
   ->pairize
   ->Array.keep(x => x->isPairSumThatYear(2020))
-  ->Array.getExn(0)
-  ->multiplySelf
+  ->Array.map(multiplySelf)
+  ->MMath.Int.sum
+
 
 "input/Week1/Year2020Day1.sample2.txt"->solution->Js.log
 

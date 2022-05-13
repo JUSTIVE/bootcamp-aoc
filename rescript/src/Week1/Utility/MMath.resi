@@ -1,4 +1,4 @@
-module Int : {
+module Int: {
   let sum: array<int> => int
   let max: array<int> => int
   let ma: (int, int, int) => int
@@ -6,7 +6,7 @@ module Int : {
   let inRange: (int, int, int) => bool
 }
 
-module Float : {
+module Float: {
   let sum: array<float> => float
   let max: array<float> => float
   let ma: (float, float, float) => float

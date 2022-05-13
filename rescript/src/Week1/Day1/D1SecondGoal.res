@@ -9,8 +9,8 @@ let solution = filePath =>
   ->Array.keepMap(Int.fromString) // array<option<int>>
   ->triplize
   ->Array.keep(x => x->isTripleSumThatYear(2020))
-  ->Array.getExn(0)
-  ->multiplySelf
+  ->Array.map(multiplySelf)
+  ->MMath.Int.sum
 
 "input/Week1/Year2020Day1.sample2.txt"->solution->Js.log
 
