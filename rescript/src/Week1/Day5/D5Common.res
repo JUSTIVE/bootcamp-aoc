@@ -1,5 +1,4 @@
 open Belt
-open Math
 
 type seat = {
   row: int,
@@ -37,9 +36,9 @@ let parseBinaryString = (target, arbitraryBinaryMatcherPattern) =>
   ->Array.reverse
   ->Array.map(applyMapper(arbitraryBinaryMatcherPattern))
   ->Array.mapWithIndex((i, x) => Js.Math.pow_float(~base=2.0, ~exp=i->Int.toFloat)->Float.toInt * x)
-  ->sum_i
+  ->MMath.Int.sum
 
-let processSeatID = seat => ma_i(8, seat.row, seat.column)
+let processSeatID = seat => MMath.Int.ma(8, seat.row, seat.column)
 
 let parseBoardingPass = boardingPass => {
   seat(

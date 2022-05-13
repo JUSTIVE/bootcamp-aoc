@@ -5,32 +5,46 @@ type slant = {
   dy: int,
 }
 
-type size = {
-    width:int,
-    height:int
+type gridSize = {
+  width: int,
+  height: int,
 }
 
 type grid = {
-    cells: array<string>,
-    size: size
+  cells: array<string>,
+  size: gridSize,
 }
 
-let genGrid = filePath => {
-    let cells =
-        filePath
-        ->Node.Fs.readFileAsUtf8Sync
-        ->Js_string2.split("\n")
-
-    {
-      cells
-    }
+let slant_ = (dx, dy) => {
+  {
+    dx: dx,
+    dy: dy,
   }
-
-let solution = (slant, filePath) => {
-  
-  genGrid(filePath)
-  ->Array.keepWithIndex((_, i) => mod(i, slant.dy) === 0)
-  ->Array.mapWithIndex((i,x) => x->[mod()])
 }
 
-solution({dx: 3, dy: 1},"input/Week1/Year2020Day3.sample.txt")->Js.log
+let gridSize_ = cells => {
+  {
+    width: cells->Array.length,
+    height: cells->Array.getExn(0)->Js.String.length,
+  }
+}
+
+let grid_ = filePath => {
+  let cells = filePath->FileReader.readFileLine
+  {
+    cells: cells,
+    size: gridSize_(cells),
+  }
+}
+
+let nthCharFromStringPattern = (target, n) => {
+  target->Js.String2.charAt(mod(n, target->Js.String2.length))
+}
+
+let potentialCollisionCount = (slant,grid) => {
+  grid.cells
+  ->Array.keepWithIndex((_, i) => mod(i, slant.dy) === 0)
+  ->Array.mapWithIndex((i, x) => x->nthCharFromStringPattern(i * slant.dx))
+  ->Array.keep(x => x === "#")
+  ->Array.length
+}
