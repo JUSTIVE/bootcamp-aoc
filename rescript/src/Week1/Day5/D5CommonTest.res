@@ -1,10 +1,11 @@
 open D5Common
+open MSUtil.Test
 
 let parseBinaryStringTest = {
   let patternBF = arbitraryBinaryMatcherPattern("B", "F")
 
   let runner = (oracle, input) =>
-    Test.expectInt("parseBinaryString", oracle, input->parseBinaryString(patternBF))
+    expectInt("parseBinaryString", oracle, input->parseBinaryString(patternBF))
 
   runner(70, "BFFFBBF")
   runner(14, "FFFBBBF")

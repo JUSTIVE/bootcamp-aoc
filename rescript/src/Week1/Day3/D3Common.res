@@ -1,4 +1,5 @@
 open Belt
+open MSUtil.FileReader
 
 type slant = {
   dx: int,
@@ -30,7 +31,7 @@ let gridSize_ = cells => {
 }
 
 let grid_ = filePath => {
-  let cells = filePath->FileReader.readFileLine
+  let cells = filePath->readFileLine
   {
     cells: cells,
     size: gridSize_(cells),

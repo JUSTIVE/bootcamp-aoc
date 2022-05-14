@@ -1,4 +1,7 @@
 open Belt
+open MSUtil.FileReader
+open MSUtil.Bool
+open MSUtil.String
 
 type rule = {
   least: int,
@@ -31,17 +34,17 @@ let parse = line =>
   )
 
 let validate1 = ({rule, value}) =>
-  value->SString.count(rule.kind)->MMath.Int.inRange(rule.least, rule.most)
+  value->count(rule.kind)->MSUtil.Math.Int.inRange(rule.least, rule.most)
 
 let validate2 = ({rule, value}) =>
-  BBool.xor(
+  xor(
     value->Js.String2.charAt(rule.least - 1) === rule.kind,
     value->Js.String2.charAt(rule.most - 1) === rule.kind,
   )
 
 let goal1 = filePath =>
   filePath
-  ->FileReader.readFileLine
+  ->readFileLine
   ->Array.map(parse)
   ->Array.keep(Option.isSome)
   ->Array.keep(x => x->Option.mapWithDefault(false, validate1))
@@ -50,7 +53,7 @@ let goal1 = filePath =>
 
 let goal2 = filePath =>
   filePath
-  ->FileReader.readFileLine
+  ->readFileLine
   ->Array.map(parse)
   ->Array.keep(x => x->Option.mapWithDefault(false, validate2))
   ->Array.length

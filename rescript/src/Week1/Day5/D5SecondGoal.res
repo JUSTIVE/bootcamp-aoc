@@ -1,6 +1,6 @@
 open Belt
 open D5Common
-open FileReader
+open MSUtil.FileReader
 
 let findMissingSeat = seatIDs => {
   let bias = seatIDs->takeFirst(0)

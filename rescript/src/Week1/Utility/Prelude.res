@@ -1,1 +1,0 @@
-module Array = AArray

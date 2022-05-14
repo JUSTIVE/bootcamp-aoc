@@ -1,7 +1,8 @@
 open Belt
 open D1Common
-open FileReader
-open TTriple
+open MSUtil.FileReader
+open MSUtil.Tuple
+open MSUtil.Test
 
 let solution = filePath =>
   filePath
@@ -9,13 +10,13 @@ let solution = filePath =>
   ->Array.keepMap(Int.fromString) // array<option<int>>
   ->triplize
   ->Array.keep(x => x->isTripleSumThatYear(2020))
-  ->Array.map(multiplySelf)
-  ->MMath.Int.sum
+  ->Array.map(Tuple3.multiplySelf)
+  ->MSUtil.Math.Int.sum
 
 "input/Week1/Year2020Day1.sample2.txt"->solution->Js.log
 
 let test = {
-  Test.expectInt("sample1",241861950, solution("input/Week1/Year2020Day1.sample1.txt"))
+  expectInt("sample1",241861950, solution("input/Week1/Year2020Day1.sample1.txt"))
 }
 
 // ppx PreProcessor

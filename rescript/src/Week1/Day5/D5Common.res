@@ -36,9 +36,9 @@ let parseBinaryString = (target, arbitraryBinaryMatcherPattern) =>
   ->Array.reverse
   ->Array.map(applyMapper(arbitraryBinaryMatcherPattern))
   ->Array.mapWithIndex((i, x) => Js.Math.pow_float(~base=2.0, ~exp=i->Int.toFloat)->Float.toInt * x)
-  ->MMath.Int.sum
+  ->MSUtil.Math.Int.sum
 
-let processSeatID = seat => MMath.Int.ma(8, seat.row, seat.column)
+let processSeatID = seat => MSUtil.Math.Int.ma(8, seat.row, seat.column)
 
 let parseBoardingPass = boardingPass => {
   seat(

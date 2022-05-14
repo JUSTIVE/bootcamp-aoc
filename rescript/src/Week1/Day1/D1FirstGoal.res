@@ -1,7 +1,8 @@
 open Belt
 open D1Common
-open FileReader
-open PPair
+open MSUtil.FileReader
+open MSUtil.Tuple
+open MSUtil.Test
 
 let solution = filePath =>
   filePath
@@ -9,12 +10,11 @@ let solution = filePath =>
   ->Array.keepMap(Int.fromString)
   ->pairize
   ->Array.keep(x => x->isPairSumThatYear(2020))
-  ->Array.map(multiplySelf)
-  ->MMath.Int.sum
-
+  ->Array.map(Tuple2.multiplySelf)
+  ->MSUtil.Math.Int.sum
 
 "input/Week1/Year2020Day1.sample2.txt"->solution->Js.log
 
 let test = {
-  Test.expectInt("sample1",514579, solution("input/Week1/Year2020Day1.sample1.txt"))
+  expectInt("sample1", 514579, solution("input/Week1/Year2020Day1.sample1.txt"))
 }
