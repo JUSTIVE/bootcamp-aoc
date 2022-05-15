@@ -29,7 +29,7 @@ let stringToBinary = (value, arbitraryBinaryPattern) =>
   ->Js.String2.split("")
   ->Array.map(value =>
     switch value {
-    | x if x === arbitraryBinaryPattern.upperBound => "1"
+    | x if x == arbitraryBinaryPattern.upperBound => "1"
     | __ => "0"
     }
   )
@@ -52,7 +52,7 @@ let parseBoardingPass = boardingPass => {
 
 let findMissingSeat = seatIDs => {
   let bias = seatIDs->MSUtil.Array.takeFirstWithDefault(0)
-  seatIDs->Array.keepWithIndex((x, i) => i + bias !== x)->MSUtil.Array.takeFirstWithDefault(0) - 1
+  seatIDs->Array.keepWithIndex((x, i) => i + bias != x)->MSUtil.Array.takeFirstWithDefault(0) - 1
 }
 
 let generateSeatID = fileContent =>

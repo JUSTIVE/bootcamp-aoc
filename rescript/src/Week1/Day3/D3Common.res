@@ -44,8 +44,8 @@ let nthCharFromStringPattern = (target, n) => {
 
 let potentialCollisionCount = (slant,grid) => {
   grid.cells
-  ->Array.keepWithIndex((_, i) => mod(i, slant.dy) === 0)
+  ->Array.keepWithIndex((_, i) => mod(i, slant.dy) == 0)
   ->Array.mapWithIndex((i, x) => x->nthCharFromStringPattern(i * slant.dx))
-  ->Array.keep(x => x === "#")
+  ->Array.keep(x => x == "#")
   ->Array.length
 }

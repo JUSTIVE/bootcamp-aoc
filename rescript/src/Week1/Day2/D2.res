@@ -38,8 +38,8 @@ let validate1 = ({rule, value}) =>
 
 let validate2 = ({rule, value}) =>
   xor(
-    value->Js.String2.charAt(rule.least - 1) === rule.kind,
-    value->Js.String2.charAt(rule.most - 1) === rule.kind,
+    value->Js.String2.charAt(rule.least - 1) == rule.kind,
+    value->Js.String2.charAt(rule.most - 1) == rule.kind,
   )
 
 let goal1 = filePath =>

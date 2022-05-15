@@ -7,7 +7,7 @@ let pairize = args =>
     args->Array.map(y => (x, y))
   })
 
-let isPairSumThatYear = (pair, year) => pair->Tuple2.sumSelf === year
+let isPairSumThatYear = (pair, year) => pair->Tuple2.sumSelf == year
 
 let triplize = args =>
   args->flatMap(x => {
@@ -16,4 +16,4 @@ let triplize = args =>
     })
   })
 
-let isTripleSumThatYear = (triple, year) => triple->Tuple3.sumSelf === year
+let isTripleSumThatYear = (triple, year) => triple->Tuple3.sumSelf == year
