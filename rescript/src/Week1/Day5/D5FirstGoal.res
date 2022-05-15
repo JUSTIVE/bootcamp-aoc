@@ -7,4 +7,4 @@ let solution = filePath =>
   ->generateSeatID
   ->MSUtil.Math.Int.max
 
-solution("input/Week1/Year2020Day5.sample.txt")->Js.log
+solution("input/Week1/Year2020Day5.sample2.txt")->Js.log
