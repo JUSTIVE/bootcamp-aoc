@@ -8,6 +8,7 @@ type rec passport = {
   hairColor: hairColor,
   eyeColor: eyeColor,
   passportId: passportId,
+  countryId: option<countryId>,
 }
 and birthdayYear = Byr(int)
 and issueYear = Iyr(int)
@@ -16,6 +17,7 @@ and height = In(int) | Cm(int)
 and hairColor = Hcl(string)
 and eyeColor = Ecl(string)
 and passportId = Pid(string)
+and countryId = Cid(string)
 
 let parsePassport = {
   let parseChunk = line => {
@@ -69,9 +71,20 @@ let parsePassport = {
       ->getValueWithRe(%re("/pid:(\d+)/"))
       ->Option.flatMap(x => x->getValueWithRe(%re("/^(\d{9})$/"))->Option.map(x => x->Pid))
 
+    let countryId = line->getValueWithRe(%re("/cid:(\w+)/"))->Option.map(x => x->Cid)
+
     (birthdayYear, issueYear, expirationYear, height, hairColor, eyeColor, passportId)->Js.log
 
-    switch (birthdayYear, issueYear, expirationYear, height, hairColor, eyeColor, passportId) {
+    switch (
+      birthdayYear,
+      issueYear,
+      expirationYear,
+      height,
+      hairColor,
+      eyeColor,
+      passportId,
+      countryId,
+    ) {
     | (
         Some(birthdayYear),
         Some(issueYear),
@@ -80,6 +93,7 @@ let parsePassport = {
         Some(hairColor),
         Some(eyeColor),
         Some(passportId),
+        countryId,
       ) =>
       Some({
         birthdayYear: birthdayYear,
@@ -89,6 +103,7 @@ let parsePassport = {
         hairColor: hairColor,
         eyeColor: eyeColor,
         passportId: passportId,
+        countryId: countryId,
       })
     | _ => None
     }
