@@ -5,7 +5,7 @@ type seat = {
   column: int,
 }
 
-type arbitraryBinaryMatcherPattern = {
+type arbitraryBinaryPattern = {
   upperBound: string,
   lowerBound: string,
 }
@@ -17,49 +17,42 @@ let seat = (row, column) => {
   }
 }
 
-let arbitraryBinaryMatcherPattern = (upperBound, lowerBound) => {
+let arbitraryBinaryPattern = (upperBound, lowerBound) => {
   {
     upperBound: upperBound,
     lowerBound: lowerBound,
   }
 }
 
-let applyMapper = (arbitraryBinaryMatcherPattern, target) =>
-  switch target {
-  | x if x === arbitraryBinaryMatcherPattern.upperBound => 1
-  | __ => 0
-  }
-
-let parseBinaryString = (target, arbitraryBinaryMatcherPattern) =>
-  target
+let stringToBinary = (value, arbitraryBinaryPattern) =>
+  value
   ->Js.String2.split("")
-  ->Array.reverse
-  ->Array.map(applyMapper(arbitraryBinaryMatcherPattern))
-  ->Array.mapWithIndex((i, x) => Js.Math.pow_float(~base=2.0, ~exp=i->Int.toFloat)->Float.toInt * x)
-  ->MMath.Int.sum
+  ->Array.map(value =>
+    switch value {
+    | x if x == arbitraryBinaryPattern.upperBound => "1"
+    | __ => "0"
+    }
+  )
+  ->MSUtil.String.join("")
 
-let processSeatID = seat => MMath.Int.ma(8, seat.row, seat.column)
+let processSeatID = seat => MSUtil.Math.Int.ma(8, seat.row, seat.column)
 
 let parseBoardingPass = boardingPass => {
   seat(
     boardingPass
     ->Js.String2.slice(~from=0, ~to_=7)
-    ->parseBinaryString({upperBound: "B", lowerBound: "F"}),
+    ->stringToBinary({upperBound: "B", lowerBound: "F"})
+    ->MSUtil.String.parseInt(2),
     boardingPass
     ->Js.String2.slice(~from=7, ~to_=10)
-    ->parseBinaryString({upperBound: "R", lowerBound: "L"}),
+    ->stringToBinary({upperBound: "R", lowerBound: "L"})
+    ->MSUtil.String.parseInt(2),
   )
 }
 
-let takeFirst = (iterable, fallback) =>
-  switch iterable[0] {
-  | Some(x) => x
-  | None => fallback
-  }
-
 let findMissingSeat = seatIDs => {
-  let bias = seatIDs->takeFirst(0)
-  seatIDs->Array.keepWithIndex((x, i) => i + bias !== x)->takeFirst(0) - 1
+  let bias = seatIDs->MSUtil.Array.takeFirstWithDefault(0)
+  seatIDs->Array.keepWithIndex((x, i) => i + bias != x)->MSUtil.Array.takeFirstWithDefault(0) - 1
 }
 
 let generateSeatID = fileContent =>

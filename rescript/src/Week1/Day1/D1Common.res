@@ -1,22 +1,19 @@
 open Belt
+open MSUtil.Array
+open MSUtil.Tuple
 
 let pairize = args =>
-  args
-  ->Array.map(x => {
+  args->flatMap(x => {
     args->Array.map(y => (x, y))
   })
-  ->Array.concatMany
 
-let isPairSumThatYear = (pair, year) => pair->PPair.sumSelf === year
+let isPairSumThatYear = (pair, year) => pair->Tuple2.sumSelf == year
 
 let triplize = args =>
-  args
-  ->Array.map(x => {
-    args->Array.map(y => {
+  args->flatMap(x => {
+    args->flatMap(y => {
       args->Array.map(z => (x, y, z))
     })
-    ->Array.concatMany
   })
-  ->Array.concatMany
 
-let isTripleSumThatYear = (triple, year) => triple->TTriple.sumSelf === year
+let isTripleSumThatYear = (triple, year) => triple->Tuple3.sumSelf == year

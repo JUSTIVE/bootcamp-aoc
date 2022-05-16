@@ -1,0 +1,25 @@
+1. 리스크립트 Regex 사용해보기
+2. 모듈 펑터를 공부하자. Map.t을 선언해서 써보기
+
+JS
+== : type coercion comp
+=== : reference comp
+structural comp (deep comp) X
+
+const a = {
+  age: 1
+}
+
+const b = {
+  age: 1
+}
+
+a === b => false
+
+RES
+== => 
+=== => ===
+
+OCaml
+= => structural comp
+== => reference comp
