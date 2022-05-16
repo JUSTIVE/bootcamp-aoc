@@ -25,8 +25,8 @@ let parsePassport = {
       re
       ->Js.Re.exec_(line)
       ->Option.map(Js.Re.captures)
-      ->Option.map(x => x->Array.map(x => x->Js.Nullable.toOption))
       ->Option.flatMap(x => x->Array.get(1))
+      ->Option.map(Js.Nullable.toOption)
       ->Option.getWithDefault(None)
 
     let parseWithDigitAndRange = ((min, max), gen, re) =>
