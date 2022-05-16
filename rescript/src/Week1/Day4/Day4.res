@@ -15,7 +15,7 @@ let parseChunk = line =>
   )
   ->Map.String.fromArray
 
-let parse = fileContent => fileContent->Js.String2.split("\n\n")->Array.map(parseChunk)
+let parsePassport = fileContent => fileContent->Js.String2.split("\n\n")->Array.map(parseChunk)
 
 let validateField = passportCandidate =>
   ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]
@@ -93,10 +93,13 @@ let validate = passportCandidates => {
   )
 }
 
-let goal1 = filePath => filePath->MSUtil.FileReader.readAllFile->parse->Array.keep(validateField)
+let countPassport = Array.length
 
-let goal2 = filePath => filePath->MSUtil.FileReader.readAllFile->parse->validate
+let goal1 = filePath =>
+  filePath->MSUtil.FileReader.readAllFile->parsePassport->Array.keep(validateField)
 
-"input/Week1/Year2020Day4.sample2.txt"->goal2->Array.length->Js.log
+let goal2 = filePath => filePath->MSUtil.FileReader.readAllFile->parsePassport->validate
+
+"input/Week1/Year2020Day4.sample2.txt"->goal2->countPassport->Js.log
 // "input/Week1/Year2020Day4.sample3.txt"->goal2->Js.log
 // "input/Week1/Year2020Day4.sample4.txt"->goal2->Js.log

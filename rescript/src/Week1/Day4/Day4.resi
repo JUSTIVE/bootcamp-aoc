@@ -2,7 +2,7 @@ type passport
 
 let parseChunk:string=>passport
 
-let parse:string=>array<passport>
+let parsePassport:string=>array<passport>
 
 let validateField:passport=>bool
 
