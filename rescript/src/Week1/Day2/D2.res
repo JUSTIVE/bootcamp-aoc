@@ -16,8 +16,8 @@ type parsedLine = {
 
 let parse = line =>
   // 리스크립트 Regex 리팩토링 해보기
-  %re("/(\d)-(\d) (\w): (\w+)/")
-  ->Js.Re.exec_(line)
+  %re("/(\d)-(\d) (\w): (\w+)/") // Js.Re.t
+  ->Js.Re.exec_(line) //option<Js.Re.result>
   ->Option.flatMap(result =>
     switch result->Js.Re.captures->Array.keepMap(Js.toOption) {
     | [_, least, most, kind, value] =>
@@ -34,7 +34,7 @@ let parse = line =>
   )
 
 let validate1 = ({rule, value}) =>
-  value->count(rule.kind)->MSUtil.Math.Int.isInRange(rule.least, rule.most)
+  value->count(rule.kind)->MSUtil.Math.Int.isInRange(rule.least, rule.most) //string //int //bool
 
 let validate2 = ({rule, value}) =>
   xor(
@@ -44,20 +44,19 @@ let validate2 = ({rule, value}) =>
 
 let goal1 = filePath =>
   filePath
-  ->readFileLine
-  ->Array.map(parse)
-  ->Array.keep(Option.isSome)
-  ->Array.keep(x => x->Option.mapWithDefault(false, validate1))
-  ->Array.length
-  ->Js.log
+  ->readFileLine // array<string>
+  ->Array.map(parse) // array<parsedLine>
+  ->Array.keep(x => x->Option.mapWithDefault(false, validate1)) // array<bool>
+  ->Array.length // int
+  ->Js.log //unit
 
 let goal2 = filePath =>
-  filePath
-  ->readFileLine
-  ->Array.map(parse)
-  ->Array.keep(x => x->Option.mapWithDefault(false, validate2))
-  ->Array.length
-  ->Js.log
+  filePath // string
+  ->readFileLine // array<string>
+  ->Array.map(parse) // array<parsedLine>
+  ->Array.keep(x => x->Option.mapWithDefault(false, validate2)) // array<bool>
+  ->Array.length // int
+  ->Js.log //unit
 
 "input/Week1/Year2020Day2.sample1.txt"->goal1
 
