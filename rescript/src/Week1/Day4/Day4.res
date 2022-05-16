@@ -15,7 +15,7 @@ let parsePassport = {
       }
     )
     ->Map.String.fromArray
-    
+
   fileContent => fileContent->Js.String2.split("\n\n")->Array.map(parseChunk)
 }
 
@@ -27,7 +27,7 @@ let validateField = passportCandidate =>
 let validate = passportCandidates => {
   let validateNDigitNum = (value, n) =>
     Js.Re.test_(Js.Re.fromString("\d{" ++ n->Int.toString ++ "}"), value)
-  let validateFieldRule = (map, key, predicate) =>
+  let validateFieldRule = (key, predicate, map) =>
     map->Map.String.get(key)->Option.map(predicate)->Option.getWithDefault(false)
 
   let validateDigitAndRange = (n, (min, max), value) =>
@@ -39,16 +39,13 @@ let validate = passportCandidates => {
       ->Option.getWithDefault(false),
     ]->Array.reduce(true, (acc, x) => acc && x)
 
-  let validateBirthYear = map =>
-    map->validateFieldRule("byr", validateDigitAndRange(4, (1920, 2002)))
+  let validateBirthYear = validateFieldRule("byr", validateDigitAndRange(4, (1920, 2002)))
 
-  let validateIssueYear = map =>
-    map->validateFieldRule("iyr", validateDigitAndRange(4, (2010, 2020)))
+  let validateIssueYear = validateFieldRule("iyr", validateDigitAndRange(4, (2010, 2020)))
 
-  let validateExpirationYear = map =>
-    map->validateFieldRule("eyr", validateDigitAndRange(4, (2020, 2030)))
+  let validateExpirationYear = validateFieldRule("eyr", validateDigitAndRange(4, (2020, 2030)))
 
-  let validateHeight = map => {
+  let validateHeight = {
     let validateByUnitAndRange = (value, unit, (min, max)) =>
       value
       ->Js.String2.replaceByRe(Js.Re.fromString(unit), "")
@@ -56,7 +53,7 @@ let validate = passportCandidates => {
       ->Option.map(x => x->MSUtil.Math.Int.isInRange(min, max))
       ->Option.getWithDefault(false)
 
-    map->validateFieldRule("hgt", value =>
+    validateFieldRule("hgt", value =>
       switch value {
       | x if %re("/(\d+)cm/")->Js.Re.test_(x) => x->validateByUnitAndRange("cm", (150, 193))
       | x if %re("/(\d+)in/")->Js.Re.test_(x) => x->validateByUnitAndRange("in", (59, 76))
@@ -65,19 +62,16 @@ let validate = passportCandidates => {
     )
   }
 
-  let validateHairColor = map =>
-    map->validateFieldRule("hcl", x => %re("/#[0-9a-f]{6}/")->Js.Re.test_(x))
+  let validateHairColor = validateFieldRule("hcl", x => %re("/#[0-9a-f]{6}/")->Js.Re.test_(x))
 
-  let validateEyeColor = map =>
-    map->validateFieldRule("ecl", x =>
-      switch x {
-      | "amb" | "blu" | "brn" | "gry" | "grn" | "hzl" | "oth" => true
-      | _ => false
-      }
-    )
+  let validateEyeColor = validateFieldRule("ecl", x =>
+    switch x {
+    | "amb" | "blu" | "brn" | "gry" | "grn" | "hzl" | "oth" => true
+    | _ => false
+    }
+  )
 
-  let validatePassportID = map =>
-    map->validateFieldRule("pid", x => %re("/[0-9]{9}/")->Js.Re.test_(x))
+  let validatePassportID = validateFieldRule("pid", x => %re("/^[0-9]{9}$/")->Js.Re.test_(x))
 
   passportCandidates->Array.keep(x =>
     [
@@ -103,5 +97,5 @@ let goal1 = filePath =>
 let goal2 = filePath => filePath->MSUtil.FileReader.readAllFile->parsePassport->validate
 
 "input/Week1/Year2020Day4.sample2.txt"->goal2->countPassport->Js.log
-// "input/Week1/Year2020Day4.sample3.txt"->goal2->Js.log
-// "input/Week1/Year2020Day4.sample4.txt"->goal2->Js.log
+// "input/Week1/Year2020Day4.sample3.txt"->goal2->countPassport->Js.log
+// "input/Week1/Year2020Day4.sample4.txt"->goal2->countPassport->Js.log
