@@ -20,15 +20,19 @@ let parse = line =>
   ->Js.Re.exec_(line) //option<Js.Re.result>
   ->Option.flatMap(result =>
     switch result->Js.Re.captures->Array.keepMap(Js.toOption) {
-    | [_, least, most, kind, value] =>
-      Some({
-        rule: {
-          least: least->Int.fromString->Option.getExn,
-          most: most->Int.fromString->Option.getExn,
-          kind: kind,
-        },
-        value: value,
-      })
+    | [_, least, most, kind, value]  =>
+      switch (least->Int.fromString, most->Int.fromString) {
+      |(Some(least),Some(most))=>
+        Some({
+          rule: {
+            least: least,
+            most: most,
+            kind: kind,
+          },
+          value: value,
+        })
+      | _ =>None
+      }
     | _ => None
     }
   )

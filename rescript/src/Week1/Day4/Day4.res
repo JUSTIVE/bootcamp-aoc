@@ -19,6 +19,27 @@ let parsePassport = {
   fileContent => fileContent->Js.String2.split("\n\n")->Array.map(parseChunk)
 }
 
+//{
+//  pid:087499704
+//  hgt:74in
+//  ecl:grn
+//  iyr:2012
+//  eyr:2030
+//  byr:1980
+//  hcl:#623a2f
+//}
+
+// type passport = {
+//   pid: string,
+//   hgt: hgt
+// }
+// and hgt = In(int) | Cm(int)
+
+// parseHgt = (string): option<hgt>
+// parseHgt("abc") => None
+// parseHgt("163cm") => Some(Cm(163))
+
+
 let validateField = passportCandidate =>
   ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]
   ->Array.keep(x => passportCandidate->Map.String.has(x))
@@ -27,6 +48,7 @@ let validateField = passportCandidate =>
 let validate = passportCandidates => {
   let validateNDigitNum = (value, n) =>
     Js.Re.test_(Js.Re.fromString("\d{" ++ n->Int.toString ++ "}"), value)
+
   let validateFieldRule = (key, predicate, map) =>
     map->Map.String.get(key)->Option.map(predicate)->Option.getWithDefault(false)
 
@@ -73,6 +95,11 @@ let validate = passportCandidates => {
 
   let validatePassportID = validateFieldRule("pid", x => %re("/^[0-9]{9}$/")->Js.Re.test_(x))
 
+// validateFn1: passport => option<passport>
+// validateFn2: passport => option<passport>
+// validateFn3: passport => option<passport>
+
+// passport >>= Option.flatMap validateFn1 >>=
   passportCandidates->Array.keep(x =>
     [
       validateField,
