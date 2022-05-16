@@ -5,12 +5,24 @@ let join = (args, init) => joinWith(args, init, "")
 let count = (value, token) =>
   value->Js.String2.split("")->Belt.Array.keep(x => x == token)->Belt.Array.length
 
-let parseInt = (value, radix) =>
-  value
-  ->Js.String2.split("")
-  ->Belt.Array.map(c => c->Js.String2.charCodeAt(0)->Belt.Float.toInt - 48)
-  ->Belt.Array.reverse
-  ->Belt.Array.mapWithIndex((i, x) =>
-    Js.Math.pow_float(~base=radix->Belt.Int.toFloat, ~exp=i->Belt.Int.toFloat)->Belt.Float.toInt * x
-  )
-  ->MSUtil_Math.Int.sum
+let parseInt = (value, radix) => {
+  let parseIntSingleString = value =>
+    switch value->Js.String2.charCodeAt(0)->Belt.Float.toInt - 48 {
+    | x if x >= 0 && x <= 9 => Some(x)
+    | _ => None
+    }
+
+  switch value->Js.String2.split("")->Belt.Array.map(parseIntSingleString) {
+  | x if Belt.Array.every(x, Belt.Option.isSome) =>
+    x
+    ->Belt.Array.reverse
+    ->Belt.Array.map(x => x->Belt.Option.getExn)
+    ->Belt.Array.mapWithIndex((i, x) =>
+      Js.Math.pow_float(~base=radix->Belt.Int.toFloat, ~exp=i->Belt.Int.toFloat)->Belt.Float.toInt *
+        x
+    )
+    ->MSUtil_Math.Int.sum
+    ->Some
+  | _ => None
+  }
+}

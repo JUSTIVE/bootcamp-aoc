@@ -10,20 +10,6 @@ type arbitraryBinaryPattern = {
   lowerBound: string,
 }
 
-let seat = (row, column) => {
-  {
-    row: row,
-    column: column,
-  }
-}
-
-let arbitraryBinaryPattern = (upperBound, lowerBound) => {
-  {
-    upperBound: upperBound,
-    lowerBound: lowerBound,
-  }
-}
-
 let stringToBinary = (value, arbitraryBinaryPattern) =>
   value
   ->Js.String2.split("")
@@ -38,7 +24,7 @@ let stringToBinary = (value, arbitraryBinaryPattern) =>
 let processSeatID = seat => MSUtil.Math.Int.ma(8, seat.row, seat.column)
 
 let parseBoardingPass = boardingPass => {
-  seat(
+  switch (
     boardingPass
     ->Js.String2.slice(~from=0, ~to_=7)
     ->stringToBinary({upperBound: "B", lowerBound: "F"})
@@ -47,7 +33,10 @@ let parseBoardingPass = boardingPass => {
     ->Js.String2.slice(~from=7, ~to_=10)
     ->stringToBinary({upperBound: "R", lowerBound: "L"})
     ->MSUtil.String.parseInt(2),
-  )
+  ) {
+  | (Some(row), Some(column)) => Some({row: row, column: column})
+  | _ => None
+  }
 }
 
 let findMissingSeat = seatIDs => {
@@ -56,4 +45,9 @@ let findMissingSeat = seatIDs => {
 }
 
 let generateSeatID = fileContent =>
-  fileContent->Array.map(parseBoardingPass)->Array.map(processSeatID)->SortArray.Int.stableSort
+  fileContent
+  ->Array.map(parseBoardingPass)
+  ->Array.map(x => x->Option.map(processSeatID))
+  ->Array.keep(Option.isSome)
+  ->Array.map(x => x->Option.getExn)
+  ->SortArray.Int.stableSort
