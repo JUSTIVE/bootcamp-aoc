@@ -1,128 +1,109 @@
 open Belt
 
-type passport = Map.String.t<string>
+type rec passport = {
+  birthdayYear: birthdayYear,
+  issueYear: issueYear,
+  expirationYear: expirationYear,
+  height: height,
+  hairColor: hairColor,
+  eyeColor: eyeColor,
+  passportId: passportId,
+}
+and birthdayYear = Byr(int)
+and issueYear = Iyr(int)
+and expirationYear = Eyr(int)
+and height = In(int) | Cm(int)
+and hairColor = Hcl(string)
+and eyeColor = Ecl(string)
+and passportId = Pid(string)
 
 let parsePassport = {
-  let parseChunk = line =>
-    line
-    ->Js.String2.replaceByRe(%re("/\\n/g"), " ")
-    ->Js.String2.split(" ")
-    ->Array.map(x => x->Js.String2.split(":"))
-    ->Array.keepMap(x =>
-      switch x {
-      | [x, y] => Some(x, y)
+  let parseChunk = line => {
+    let getValueWithRe = (line, re) =>
+      re
+      ->Js.Re.exec_(line)
+      ->Option.map(Js.Re.captures)
+      ->Option.map(x => x->Array.map(x => x->Js.Nullable.toOption))
+      ->Option.flatMap(x => x->Array.get(1))
+      ->Option.getWithDefault(None)
+
+    let parseWithDigitAndRange = ((min, max), gen, re) =>
+      switch line->getValueWithRe(re)->Option.flatMap(x => x->MSUtil.String.parseInt(10)) {
+      | Some(x) if x->MSUtil.Math.Int.isInRange(min, max) => Some(gen(x))
       | _ => None
       }
-    )
-    ->Map.String.fromArray
 
-  fileContent => fileContent->Js.String2.split("\n\n")->Array.map(parseChunk)
-}
+    let birthdayYear = parseWithDigitAndRange((1920, 2002), x => x->Byr, %re("/byr:(\d+)/"))
 
-//{
-//  pid:087499704
-//  hgt:74in
-//  ecl:grn
-//  iyr:2012
-//  eyr:2030
-//  byr:1980
-//  hcl:#623a2f
-//}
+    let issueYear = parseWithDigitAndRange((2010, 2020), x => x->Iyr, %re("/iyr:(\d+)/"))
 
-// type passport = {
-//   pid: string,
-//   hgt: hgt
-// }
-// and hgt = In(int) | Cm(int)
+    let expirationYear = parseWithDigitAndRange((2020, 2030), x => x->Eyr, %re("/eyr:(\d+)/"))
 
-// parseHgt = (string): option<hgt>
-// parseHgt("abc") => None
-// parseHgt("163cm") => Some(Cm(163))
+    let height = {
+      let parseWithRange = (x, (min, max), re, gen) =>
+        switch x->getValueWithRe(re)->Option.flatMap(x => x->MSUtil.String.parseInt(10)) {
+        | Some(x) if x->MSUtil.Math.Int.isInRange(min, max) => Some(gen(x))
+        | _ => None
+        }
 
-
-let validateField = passportCandidate =>
-  ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]
-  ->Array.keep(x => passportCandidate->Map.String.has(x))
-  ->Array.length == 7
-
-let validate = passportCandidates => {
-  let validateNDigitNum = (value, n) =>
-    Js.Re.test_(Js.Re.fromString("\d{" ++ n->Int.toString ++ "}"), value)
-
-  let validateFieldRule = (key, predicate, map) =>
-    map->Map.String.get(key)->Option.map(predicate)->Option.getWithDefault(false)
-
-  let validateDigitAndRange = (n, (min, max), value) =>
-    [
-      value->validateNDigitNum(n),
-      value
-      ->MSUtil.String.parseInt(10)
-      ->Option.map(x => x->MSUtil.Math.Int.isInRange(min, max))
-      ->Option.getWithDefault(false),
-    ]->Array.reduce(true, (acc, x) => acc && x)
-
-  let validateBirthYear = validateFieldRule("byr", validateDigitAndRange(4, (1920, 2002)))
-
-  let validateIssueYear = validateFieldRule("iyr", validateDigitAndRange(4, (2010, 2020)))
-
-  let validateExpirationYear = validateFieldRule("eyr", validateDigitAndRange(4, (2020, 2030)))
-
-  let validateHeight = {
-    let validateByUnitAndRange = (value, unit, (min, max)) =>
-      value
-      ->Js.String2.replaceByRe(Js.Re.fromString(unit), "")
-      ->MSUtil.String.parseInt(10)
-      ->Option.map(x => x->MSUtil.Math.Int.isInRange(min, max))
-      ->Option.getWithDefault(false)
-
-    validateFieldRule("hgt", value =>
-      switch value {
-      | x if %re("/(\d+)cm/")->Js.Re.test_(x) => x->validateByUnitAndRange("cm", (150, 193))
-      | x if %re("/(\d+)in/")->Js.Re.test_(x) => x->validateByUnitAndRange("in", (59, 76))
-      | _ => false
-      }
-    )
-  }
-
-  let validateHairColor = validateFieldRule("hcl", x => %re("/#[0-9a-f]{6}/")->Js.Re.test_(x))
-
-  let validateEyeColor = validateFieldRule("ecl", x =>
-    switch x {
-    | "amb" | "blu" | "brn" | "gry" | "grn" | "hzl" | "oth" => true
-    | _ => false
+      line
+      ->getValueWithRe(%re("/hgt:(\w+)/"))
+      ->Option.flatMap(x =>
+        switch x {
+        | x if %re("/(\d+)cm/")->Js.Re.test_(x) =>
+          x->parseWithRange((150, 193), %re("/(\d+)cm/"), x => x->Cm)
+        | x if %re("/(\d+)in/")->Js.Re.test_(x) =>
+          x->parseWithRange((59, 76), %re("/(\d+)in/"), x => x->In)
+        | _ => None
+        }
+      )
     }
-  )
 
-  let validatePassportID = validateFieldRule("pid", x => %re("/^[0-9]{9}$/")->Js.Re.test_(x))
+    let hairColor = line->getValueWithRe(%re("/hcl:(#[0-9a-f]{6})/"))->Option.map(x => x->Hcl)
 
-// validateFn1: passport => option<passport>
-// validateFn2: passport => option<passport>
-// validateFn3: passport => option<passport>
+    let eyeColor =
+      line->getValueWithRe(%re("/ecl:(amb|blu|brn|gry|grn|hzl|oth)/"))->Option.map(x => x->Ecl)
 
-// passport >>= Option.flatMap validateFn1 >>=
-  passportCandidates->Array.keep(x =>
-    [
-      validateField,
-      validateBirthYear,
-      validateIssueYear,
-      validateExpirationYear,
-      validateHeight,
-      validateHairColor,
-      validateEyeColor,
-      validatePassportID,
-    ]
-    ->Array.map(y => y(x))
-    ->Array.reduce(true, (acc, x) => acc && x)
-  )
+    let passportId =
+      line
+      ->getValueWithRe(%re("/pid:(\d+)/"))
+      ->Option.flatMap(x => x->getValueWithRe(%re("/^(\d{9})$/"))->Option.map(x => x->Pid))
+
+    (birthdayYear, issueYear, expirationYear, height, hairColor, eyeColor, passportId)->Js.log
+
+    switch (birthdayYear, issueYear, expirationYear, height, hairColor, eyeColor, passportId) {
+    | (
+        Some(birthdayYear),
+        Some(issueYear),
+        Some(expirationYear),
+        Some(height),
+        Some(hairColor),
+        Some(eyeColor),
+        Some(passportId),
+      ) =>
+      Some({
+        birthdayYear: birthdayYear,
+        issueYear: issueYear,
+        expirationYear: expirationYear,
+        height: height,
+        hairColor: hairColor,
+        eyeColor: eyeColor,
+        passportId: passportId,
+      })
+    | _ => None
+    }
+  }
+  fileContent => fileContent->Js.String2.split("\n\n")->Array.map(parseChunk)
 }
 
 let countPassport = Array.length
 
 let goal1 = filePath =>
-  filePath->MSUtil.FileReader.readAllFile->parsePassport->Array.keep(validateField)
+  filePath->MSUtil.FileReader.readAllFile->parsePassport->Array.keep(Option.isSome)
 
-let goal2 = filePath => filePath->MSUtil.FileReader.readAllFile->parsePassport->validate
+let goal2 = filePath =>
+  filePath->MSUtil.FileReader.readAllFile->parsePassport->Array.keep(Option.isSome)
 
-"input/Week1/Year2020Day4.sample2.txt"->goal2->countPassport->Js.log
+// "input/Week1/Year2020Day4.sample2.txt"->goal2->countPassport->Js.log
 // "input/Week1/Year2020Day4.sample3.txt"->goal2->countPassport->Js.log
-// "input/Week1/Year2020Day4.sample4.txt"->goal2->countPassport->Js.log
+"input/Week1/Year2020Day4.sample2.txt"->goal2->countPassport->Js.log
