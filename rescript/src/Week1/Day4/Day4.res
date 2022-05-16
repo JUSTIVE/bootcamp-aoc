@@ -2,20 +2,22 @@ open Belt
 
 type passport = Map.String.t<string>
 
-let parseChunk = line =>
-  line
-  ->Js.String2.replaceByRe(%re("/\\n/g"), " ")
-  ->Js.String2.split(" ")
-  ->Array.map(x => x->Js.String2.split(":"))
-  ->Array.keepMap(x =>
-    switch x {
-    | [x, y] => Some(x, y)
-    | _ => None
-    }
-  )
-  ->Map.String.fromArray
-
-let parsePassport = fileContent => fileContent->Js.String2.split("\n\n")->Array.map(parseChunk)
+let parsePassport = {
+  let parseChunk = line =>
+    line
+    ->Js.String2.replaceByRe(%re("/\\n/g"), " ")
+    ->Js.String2.split(" ")
+    ->Array.map(x => x->Js.String2.split(":"))
+    ->Array.keepMap(x =>
+      switch x {
+      | [x, y] => Some(x, y)
+      | _ => None
+      }
+    )
+    ->Map.String.fromArray
+    
+  fileContent => fileContent->Js.String2.split("\n\n")->Array.map(parseChunk)
+}
 
 let validateField = passportCandidate =>
   ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]
