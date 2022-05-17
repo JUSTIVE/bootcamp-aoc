@@ -1,6 +1,6 @@
 type passport
 
-let parsePassport:string=>array<option<passport>>
+let parsePassport:(string,bool)=>array<option<passport>>
 
 
 // let validate:array<passport> => array<passport>

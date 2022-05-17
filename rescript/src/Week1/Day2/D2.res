@@ -38,7 +38,7 @@ let parse = line =>
   )
 
 let validate1 = ({rule, value}) =>
-  value->count(rule.kind)->MSUtil.Math.Int.isInRange(rule.least, rule.most) //string //int //bool
+  value->count(rule.kind)->MSUtil.Math.Int.isInRange((rule.least, rule.most)) //string //int //bool
 
 let validate2 = ({rule, value}) =>
   xor(

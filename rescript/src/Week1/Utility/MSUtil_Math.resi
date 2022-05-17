@@ -3,7 +3,8 @@ module Int: {
   let max: array<int> => int
   let ma: (int, int, int) => int
   let product: array<int> => int
-  let isInRange: (int, int, int) => bool
+  let isInRange: (int, (int, int)) => bool
+  let length: int => int
 }
 
 module Float: {
