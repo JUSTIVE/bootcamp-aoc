@@ -26,3 +26,13 @@ let parseInt = (value, radix) => {
   | _ => None
   }
 }
+
+module Hex = {
+  type t = string
+  let make = string =>
+    %re("/(#[0-9a-f]+)/")
+    ->Js.Re.exec_(string)
+    ->Belt.Option.map(x => x->Js.Re.captures)
+    ->Belt.Option.flatMap(x => x->Belt.Array.get(1))
+    ->Belt.Option.flatMap(Js.Nullable.toOption)
+}

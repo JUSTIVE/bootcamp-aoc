@@ -5,3 +5,4 @@ module Math = MSUtil_Math
 module Tuple = MSUtil_Tuple
 module String = MSUtil_String
 module Test = MSUtil_Test
+module Parser = MSUtil_Parser

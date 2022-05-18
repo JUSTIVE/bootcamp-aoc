@@ -1,9 +1,7 @@
 open Belt
-
+open MSUtil.Parser
 
 module Passport = {
-
-  
   type naivePassport = {
     byr: string,
     iyr: string,
@@ -14,7 +12,7 @@ module Passport = {
     pid: string,
     cid: option<string>,
   }
-  
+
   type rec strictPassport = {
     byr: int,
     iyr: int,
@@ -37,340 +35,168 @@ module Passport = {
     | Oth
   and nineNumericChars = string
 
-  type rec passport = 
-    | NaivePassport(naivePassport)
-    | StrictPassport(strictPassport)
+  // type rec passport =
+  //   | NaivePassport(naivePassport)
+  //   | StrictPassport(strictPassport)
 
-  // let make 
-}
+  let transform: naivePassport => option<strictPassport> = (naivePassport: naivePassport) => {
+    let legnthAndRangeParser = (value, length, (min, max)) =>
+      ConstraintParser.NumericParser({
+        radix: 10,
+        numericRules: [NumericLength(length), NumericRange(min, max)],
+      })->ConstraintParser.parse(value)
 
-// and ecl = Colors...
+    let byr = legnthAndRangeParser(naivePassport.byr, 4, (1920, 2002))
 
-// type rec passport = {
-//   birthdayYear: birthdayYear,
-//   issueYear: issueYear,
-//   expirationYear: expirationYear,
-//   height: height,
-//   hairColor: hairColor,
-//   eyeColor: eyeColor,
-//   passportId: passportId,
-//   countryId: option<countryId>,
-// }
-// and birthdayYear = Byr(int) | Byr_Naive
-// and issueYear = Iyr(int) | Iyr_Naive
-// and expirationYear = Eyr(int) | Eyr_Naive
-// and height = In(int) | Cm(int) | Hgt_Naive
-// and hairColor = Hcl(string) | Hcl_Naive
-// and eyeColor = Ecl(string) | Ecl_Naive
-// and passportId = Pid(string) | Pid_Naive
-// and countryId = Cid(string)
+    let iyr = legnthAndRangeParser(naivePassport.iyr, 4, (2010, 2020))
 
-// module type Comparable = {
-//   type t
-//   let cmp
-// }
-// module Map = (C: Comparable) => {
-// C.t, C.cmp
-// }
+    let eyr = legnthAndRangeParser(naivePassport.eyr, 4, (2020, 2030))
 
-// module type Passport = {type t = passport, let make: string => t}
-//
-// module Parser = (A: A) = { -> 재사용성을 고려해보자.
-//   let parse = str => str->A.make
-// }
-//
-// module Passport = {
-//   type t = { ... }
-// }
-//
-// module PassportParser = Parser(Passport)
-//
-// PassportParser.parse(`hgt: "192 ..."`): string => Passport.t
-type rec parserT<'a, 'b> = {
-  re: Js.Re.t,
-  kind: parserValueKind<'a, 'b>,
-  strict: bool,
-}
-and parserValueKind<'a, 'b> =
-  | NumericParser(numericParser)
-  | StringParser(stringParser)
-// | UnitParser(unitParser<'a, 'b>)
-and numericParser = {numericRules: array<numericParserRule>}
-and numericParserRule =
-  | LengthConstraint(int)
-  | RangeConstraint(int, int)
-and stringParser = {stringRules: array<stringParserRule>}
-and stringParserRule =
-  | LengthConstraint(int)
-  | KindConstraint(array<string>)
-// and unitParser<'a, 'b> = {unitRules: array<unitParserRule<'a, 'b>>}
-// and unitParserRule<'a, 'b> = {unitGen: 'a => 'b}
+    let rangeParser = (value, (min, max), gen) =>
+      ConstraintParser.NumericParser({
+        radix: 10,
+        numericRules: [NumericRange(min, max)],
+      })
+      ->ConstraintParser.parse(value)
+      ->Option.flatMap(x =>
+        switch x {
+        | ParseResInt(x) => x->gen->Some
+        | _ => None
+        }
+      )
 
-type parserResult =
-  | Int(int)
-  | String(string)
-  | Something
+    let hgt =
+      RegexGroupParser.make(%re("/^(\d+)(cm|in)$/"), [1, 2])
+      ->RegexGroupParser.parse(naivePassport.hgt)
+      ->Option.flatMap(x =>
+        switch x {
+        | [value, "cm"] => value->rangeParser((150, 193), x => x->Cm)
+        | [value, "in"] => value->rangeParser((59, 76), x => x->In)
+        | _ => None
+        }
+      )
 
-let parsePassport = (fileContent, strict) => {
-  let parseChunk = (line, strict) => {
-    let getValueWithRe = (line, re) =>
-      re
-      ->Js.Re.exec_(line)
-      ->Option.map(Js.Re.captures)
-      ->Option.flatMap(x => x->Array.get(1))
-      ->Option.flatMap(Js.Nullable.toOption)
+    let hcl =
+      ConstraintParser.StringParser({
+        stringRules: [StringLength(7), StringStartsWith("#")],
+      })
+      ->ConstraintParser.parse(naivePassport.hcl)
+      ->Option.flatMap(x =>
+        switch x {
+        | ParseResString(x) => Some(Hex(x))
+        | _ => None
+        }
+      )
 
-    let parseWithParser = (line, parser) => {
-      let parseNumberConstraint = (value, numericParserRule) =>
-        switch numericParserRule {
-        | LengthConstraint(length) if value->MSUtil.Math.Int.length == length => Some(value)
-        | RangeConstraint(min, max) =>
-          switch value {
-          | x if x->MSUtil.Math.Int.isInRange((min, max)) => Some(x)
+    let ecl =
+      ConstraintParser.StringParser({
+        stringRules: [StringKind(["amb", "blu", "brn", "gry", "grn", "hzl", "oth"])],
+      })
+      ->ConstraintParser.parse(naivePassport.ecl)
+      ->Option.flatMap(x =>
+        switch x {
+        | ParseResString(x) =>
+          switch x {
+          | "amb" => Some(Amb)
+          | "blu" => Some(Blu)
+          | "brn" => Some(Brn)
+          | "gry" => Some(Gry)
+          | "grn" => Some(Grn)
+          | "hzl" => Some(Hzl)
+          | "oth" => Some(Oth)
           | _ => None
           }
         | _ => None
         }
-
-      let parseStringConstraint = (value, stringParserRule: stringParserRule) =>
-        switch stringParserRule {
-        | LengthConstraint(length) if value->Js.String.length == length => Some(value)
-        | KindConstraint(kinds) if kinds->MSUtil.Array.has(value) => Some(value)
-        | _ => None
-        }
-      let advancedParse = (value, parser) => {
-        switch parser.kind {
-        | NumericParser({numericRules}) =>
-          numericRules
-          ->Array.map(x => parseNumberConstraint(_, x))
-          ->Array.reduce(value->Option.flatMap(x => x->MSUtil.String.parseInt(10)), (x, y) =>
-            x->Option.flatMap(x => y(x))
-          )
-          ->Option.map(x => x->Int)
-        | StringParser({stringRules}) =>
-          stringRules
-          ->Array.map(x => parseStringConstraint(_, x))
-          ->Array.reduce(value, (x, y) => x->Option.flatMap(x => y(x)))
-          ->Option.map(x => x->String)
-        | _ => None
-        }
-      }
-      switch parser.strict {
-      | true => line->getValueWithRe(parser.re)->advancedParse(parser)
-      | false => line->getValueWithRe(parser.re)->Option.map(_ => Something)
-      }
-    }
-
-    let naiveRe = key => Js.Re.fromString("/" ++ key ++ ":(\w+)/")
-
-    let birthdayYear = line =>
-      line
-      ->parseWithParser({
-        re: naiveRe("byr"),
-        strict: strict,
-        kind: NumericParser({
-          numericRules: [LengthConstraint(4), RangeConstraint(1920, 2002)],
-        }),
-      })
-      ->Option.flatMap(x =>
-        switch x {
-        | Int(x) => x->Byr->Some
-        | Something => Byr_Naive->Some
-        | _ => None
-        }
       )
 
-    let issueYear = line =>
-      line
-      ->parseWithParser({
-        re: naiveRe("iyr"),
-        strict: strict,
-        kind: NumericParser({
-          numericRules: [LengthConstraint(4), RangeConstraint(2010, 2020)],
-        }),
-      })
-      ->Option.flatMap(x =>
-        switch x {
-        | Int(x) => x->Iyr->Some
-        | Something => Iyr_Naive->Some
-        | _ => None
-        }
-      )
+    let pid = ConstraintParser.StringParser({
+      stringRules: [StringLength(9)],
+    })->ConstraintParser.parse(naivePassport.pid)
 
-    let expirationYear = line =>
-      line
-      ->parseWithParser({
-        re: naiveRe("eyr"),
-        strict: strict,
-        kind: NumericParser({
-          numericRules: [LengthConstraint(4), RangeConstraint(2020, 2030)],
-        }),
-      })
-      ->Option.flatMap(x =>
-        switch x {
-        | Int(x) => x->Eyr->Some
-        | Something => Eyr_Naive->Some
-        | _ => None
-        }
-      )
-
-    let height = line => {
-      let parseWithRange = (x, (min, max), re, gen) =>
-        switch x->getValueWithRe(re)->Option.flatMap(x => x->MSUtil.String.parseInt(10)) {
-        | Some(x) if x->MSUtil.Math.Int.isInRange((min, max)) => Some(gen(x))
-        | _ => None
-        }
-      let parseHeight = value =>
-        switch value {
-        | x if %re("/(\d+)cm/")->Js.Re.test_(x) =>
-          x->parseWithRange((150, 193), %re("/(\d+)cm/"), x => x->Cm)
-        | x if %re("/(\d+)in/")->Js.Re.test_(x) =>
-          x->parseWithRange((59, 76), %re("/(\d+)in/"), x => x->In)
-        | _ => None
-        }
-
-      line
-      ->parseWithParser({
-        re: naiveRe("hgt"),
-        strict: strict,
-        kind: StringParser({
-          stringRules: [LengthConstraint(2), KindConstraint(["cm", "in"])],
-        }),
-      })
-      ->Option.flatMap(x =>
-        switch x {
-        | Int(_) => None
-        | String(x) => parseHeight(x)
-        | Something => Hgt_Naive->Some
-        }
-      )
-
-      // line->parseWithStrict(strict, "hgt", %re("/hgt:(\w+)/"), _ => Hgt_Naive, parseHeight)
-    }
-
-    let hairColor = line =>
-      line
-      ->parseWithParser({
-        re: naiveRe("hcl"),
-        strict: strict,
-        kind: StringParser({
-          stringRules: [LengthConstraint(7)],
-        }),
-      })
-      ->Option.flatMap(x =>
-        switch x {
-        | String(x) => x->Hcl->Some
-        | Something => Hcl_Naive->Some
-        | _ => None
-        }
-      )
-
-    let eyeColor = line =>
-      line
-      ->parseWithParser({
-        re: naiveRe("ecl"),
-        strict: strict,
-        kind: StringParser({
-          stringRules: [KindConstraint(["amb", "blu", "brn", "gry", "grn", "hzl", "oth"])],
-        }),
-      })
-      ->Option.flatMap(x =>
-        switch x {
-        | String(x) => x->Ecl->Some
-        | Something => Ecl_Naive->Some
-        | _ => None
-        }
-      )
-
-    let passportId = line =>
-      line
-      ->parseWithParser({
-        re: naiveRe("pid"),
-        strict: strict,
-        kind: StringParser({
-          stringRules: [LengthConstraint(9)],
-        }),
-      })
-      ->Option.flatMap(x =>
-        switch x {
-        | String(x) => x->Pid->Some
-        | Something => Pid_Naive->Some
-        | _ => None
-        }
-      )
-
-    let countryId = line =>
-      line
-      ->parseWithParser({
-        re: naiveRe("cid"),
-        strict: false,
-        kind: StringParser({
-          stringRules: [LengthConstraint(9)],
-        }),
-      })
-      ->Option.flatMap(x =>
-        switch x {
-        | String(x) => x->Cid->Some
-        | Something => ""->Cid->Some
-        | _ => None
-        }
-      )
-
+    let cid = naivePassport.cid
     (
-      line->birthdayYear,
-      line->issueYear,
-      line->expirationYear,
-      line->height,
-      line->hairColor,
-      line->eyeColor,
-      line->passportId,
-      line->countryId,
+      naivePassport.byr,
+      naivePassport.iyr,
+      naivePassport.eyr,
+      naivePassport.hgt,
+      naivePassport.hcl,
+      naivePassport.ecl,
+      naivePassport.pid,
+      naivePassport.cid,
     )->Js.log
+    (byr, iyr, eyr, hgt, hcl, ecl, pid, cid)->Js.log
 
-    switch (
-      line->birthdayYear,
-      line->issueYear,
-      line->expirationYear,
-      line->height,
-      line->hairColor,
-      line->eyeColor,
-      line->passportId,
-      line->countryId,
-    ) {
+    switch (byr, iyr, eyr, hgt, hcl, ecl, pid, cid) {
     | (
-        Some(birthdayYear),
-        Some(issueYear),
-        Some(expirationYear),
+        Some(ParseResInt(byr)),
+        Some(ParseResInt(iyr)),
+        Some(ParseResInt(eyr)),
         Some(height),
-        Some(hairColor),
-        Some(eyeColor),
-        Some(passportId),
-        countryId,
+        Some(hcl),
+        Some(ecl),
+        Some(ParseResString(pid)),
+        cid,
       ) =>
-      Some({
-        birthdayYear: birthdayYear,
-        issueYear: issueYear,
-        expirationYear: expirationYear,
-        height: height,
-        hairColor: hairColor,
-        eyeColor: eyeColor,
-        passportId: passportId,
-        countryId: countryId,
-      })
+      {
+        byr: byr,
+        iyr: iyr,
+        eyr: eyr,
+        hgt: height,
+        hcl: hcl,
+        ecl: ecl,
+        pid: pid,
+        cid: cid,
+      }->Some
     | _ => None
     }
   }
-  fileContent->Js.String2.split("\n\n")->Array.map(line => line->parseChunk(strict))
+
+  let make: string => option<naivePassport> = stringChunk => {
+    let naiveParser = (key, string) =>
+      Js.Re.fromString("" ++ key ++ ":([\w#]+)")
+      ->RegexGroupParser.make([1])
+      ->RegexGroupParser.parse(string)
+      ->Option.flatMap(x => x->Array.get(0))
+
+    let byr = "byr"->naiveParser(stringChunk)
+    let iyr = "iyr"->naiveParser(stringChunk)
+    let eyr = "eyr"->naiveParser(stringChunk)
+    let hgt = "hgt"->naiveParser(stringChunk)
+    let hcl = "hcl"->naiveParser(stringChunk)
+    let ecl = "ecl"->naiveParser(stringChunk)
+    let pid = "pid"->naiveParser(stringChunk)
+    let cid = "cid"->naiveParser(stringChunk)
+
+    switch (byr, iyr, eyr, hgt, hcl, ecl, pid, cid) {
+    | (Some(byr), Some(iyr), Some(eyr), Some(hgt), Some(hcl), Some(ecl), Some(pid), cid) =>
+      {
+        byr: byr,
+        iyr: iyr,
+        eyr: eyr,
+        hgt: hgt,
+        hcl: hcl,
+        ecl: ecl,
+        pid: pid,
+        cid: cid,
+      }->Some
+    | _ => None
+    }
+  }
 }
 
-let countPassport = Array.length
-
 let goal1 = filePath =>
-  filePath->MSUtil.FileReader.readAllFile->parsePassport(false)->Array.keep(Option.isSome)
+  filePath
+  ->MSUtil.FileReader.readAllFile
+  ->Js.String2.split("\n\n")
+  ->Array.map(x => x->Js.String2.replaceByRe(%re("/\\n/g"), " "))
+  ->Array.map(Passport.make)
+  ->Array.keep(Option.isSome)
 
 let goal2 = filePath =>
-  filePath->MSUtil.FileReader.readAllFile->parsePassport(true)->Array.keep(Option.isSome)
+  filePath->goal1->Array.map(x => x->Option.flatMap(Passport.transform))->Array.keep(Option.isSome)
 
-// "input/Week1/Year2020Day4.sample2.txt"->goal2->countPassport->Js.log
+// "input/Week1/Year2020Day4.sample2.txt"->goal1->Array.length->Js.log
+"input/Week1/Year2020Day4.sample2.txt"->goal2->Array.length->Js.log
 // "input/Week1/Year2020Day4.sample3.txt"->goal2->countPassport->Js.log
-"input/Week1/Year2020Day4.sample1.txt"->goal2->countPassport->Js.log
+// "input/Week1/Year2020Day4.sample1.txt"->goal2->countPassport->Js.log
