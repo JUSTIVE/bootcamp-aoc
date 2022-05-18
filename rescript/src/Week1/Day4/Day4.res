@@ -35,10 +35,6 @@ module Passport = {
     | Oth
   and nineNumericChars = string
 
-  // type rec passport =
-  //   | NaivePassport(naivePassport)
-  //   | StrictPassport(strictPassport)
-
   let transform: naivePassport => option<strictPassport> = (naivePassport: naivePassport) => {
     let legnthAndRangeParser = (value, length, (min, max)) =>
       ConstraintParser.NumericParser({
@@ -47,9 +43,7 @@ module Passport = {
       })->ConstraintParser.parse(value)
 
     let byr = legnthAndRangeParser(naivePassport.byr, 4, (1920, 2002))
-
     let iyr = legnthAndRangeParser(naivePassport.iyr, 4, (2010, 2020))
-
     let eyr = legnthAndRangeParser(naivePassport.eyr, 4, (2020, 2030))
 
     let rangeParser = (value, (min, max), gen) =>
@@ -115,17 +109,6 @@ module Passport = {
     })->ConstraintParser.parse(naivePassport.pid)
 
     let cid = naivePassport.cid
-    (
-      naivePassport.byr,
-      naivePassport.iyr,
-      naivePassport.eyr,
-      naivePassport.hgt,
-      naivePassport.hcl,
-      naivePassport.ecl,
-      naivePassport.pid,
-      naivePassport.cid,
-    )->Js.log
-    (byr, iyr, eyr, hgt, hcl, ecl, pid, cid)->Js.log
 
     switch (byr, iyr, eyr, hgt, hcl, ecl, pid, cid) {
     | (
@@ -196,7 +179,7 @@ let goal1 = filePath =>
 let goal2 = filePath =>
   filePath->goal1->Array.map(x => x->Option.flatMap(Passport.transform))->Array.keep(Option.isSome)
 
-// "input/Week1/Year2020Day4.sample2.txt"->goal1->Array.length->Js.log
+"input/Week1/Year2020Day4.sample2.txt"->goal1->Array.length->Js.log
 "input/Week1/Year2020Day4.sample2.txt"->goal2->Array.length->Js.log
 // "input/Week1/Year2020Day4.sample3.txt"->goal2->countPassport->Js.log
 // "input/Week1/Year2020Day4.sample1.txt"->goal2->countPassport->Js.log
