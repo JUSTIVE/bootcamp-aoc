@@ -1,3 +1,15 @@
+module ParserResult = {
+  type t =
+    | ParseResInt(int)
+    | ParseResString(string)
+  
+  // let flatMap = (x, f) =>
+  
+  //     switch x {
+  //     | ParseResInt(i) => ParseResInt(i->f)
+  //     | ParseResString(s) => ParseResString(s->f)
+  //     }
+}
 module RegexGroupParser = {
   type t = {
     re: Js.Re.t,
@@ -14,13 +26,11 @@ module RegexGroupParser = {
     ->Belt.Option.map(Js.Array.map(Js.Nullable.toOption))
     ->Belt.Option.flatMap(MSUtil_Array.everyO)
     ->Belt.Option.flatMap(x => x->MSUtil_Array.take(t.groupNumber))
+    ->Belt.Option.map(x => x->Belt.Array.map(x => ParserResult.ParseResString(x)))
   }
 }
 
 module ConstraintParser = {
-  type parseResult =
-    | ParseResInt(int)
-    | ParseResString(string)
   type stringParserRule =
     | StringLength(int)
     | StringKind(array<string>)
@@ -66,12 +76,12 @@ module ConstraintParser = {
       ->Belt.Array.reduce(value->MSUtil_String.parseInt(radix), (x, y) =>
         x->Belt.Option.flatMap(x => y(x))
       )
-      ->Belt.Option.map(x => x->ParseResInt)
+      ->Belt.Option.map(x => x->ParserResult.ParseResInt)
     | StringParser({stringRules}) =>
       stringRules
       ->Belt.Array.map(x => parseStringConstraint(_, x))
       ->Belt.Array.reduce(Some(value), (x, y) => x->Belt.Option.flatMap(x => y(x)))
-      ->Belt.Option.map(x => x->ParseResString)
+      ->Belt.Option.map(x => x->ParserResult.ParseResString)
     }
   }
 }

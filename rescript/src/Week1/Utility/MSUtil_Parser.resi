@@ -1,15 +1,18 @@
+module ParserResult: {
+  type t =
+    | ParseResInt(int)
+    | ParseResString(string)
+
+  // let flatMap:(t,t=>'a) => 'a
+}
 module RegexGroupParser: {
   type t
 
   let make: (Js.Re.t, array<int>) => t
-
-  let parse: (t, string) => option<array<string>>
+  let parse: (t, string) => option<array<ParserResult.t>>
 }
 
 module ConstraintParser: {
-  type parseResult =
-    | ParseResInt(int)
-    | ParseResString(string)
   type stringParserRule =
     | StringLength(int)
     | StringKind(array<string>)
@@ -30,5 +33,5 @@ module ConstraintParser: {
 
   let parseNumberConstraint: (int, numericParserRule) => option<int>
   let parseStringConstraint: (string, stringParserRule) => option<string>
-  let parse: (t, string) => option<parseResult>
+  let parse: (t, string) => option<ParserResult.t>
 }

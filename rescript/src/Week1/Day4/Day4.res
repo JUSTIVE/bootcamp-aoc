@@ -1,5 +1,6 @@
 open Belt
 open MSUtil.Parser
+open MSUtil.Parser.ConstraintParser
 
 module Passport = {
   type naivePassport = {
@@ -37,7 +38,7 @@ module Passport = {
 
   let transform: naivePassport => option<strictPassport> = (naivePassport: naivePassport) => {
     let legnthAndRangeParser = (value, length, (min, max)) =>
-      ConstraintParser.NumericParser({
+      NumericParser({
         radix: 10,
         numericRules: [NumericLength(length), NumericRange(min, max)],
       })->ConstraintParser.parse(value)
@@ -47,7 +48,7 @@ module Passport = {
     let eyr = legnthAndRangeParser(naivePassport.eyr, 4, (2020, 2030))
 
     let rangeParser = (value, (min, max), gen) =>
-      ConstraintParser.NumericParser({
+      NumericParser({
         radix: 10,
         numericRules: [NumericRange(min, max)],
       })
@@ -64,14 +65,15 @@ module Passport = {
       ->RegexGroupParser.parse(naivePassport.hgt)
       ->Option.flatMap(x =>
         switch x {
-        | [value, "cm"] => value->rangeParser((150, 193), x => x->Cm)
-        | [value, "in"] => value->rangeParser((59, 76), x => x->In)
+        | [ParseResString(value), ParseResString("cm")] =>
+          value->rangeParser((150, 193), x => x->Cm)
+        | [ParseResString(value), ParseResString("in")] => value->rangeParser((59, 76), x => x->In)
         | _ => None
         }
       )
 
     let hcl =
-      ConstraintParser.StringParser({
+      StringParser({
         stringRules: [StringLength(7), StringStartsWith("#")],
       })
       ->ConstraintParser.parse(naivePassport.hcl)
@@ -83,7 +85,7 @@ module Passport = {
       )
 
     let ecl =
-      ConstraintParser.StringParser({
+      StringParser({
         stringRules: [StringKind(["amb", "blu", "brn", "gry", "grn", "hzl", "oth"])],
       })
       ->ConstraintParser.parse(naivePassport.ecl)
@@ -104,7 +106,7 @@ module Passport = {
         }
       )
 
-    let pid = ConstraintParser.StringParser({
+    let pid = StringParser({
       stringRules: [StringLength(9)],
     })->ConstraintParser.parse(naivePassport.pid)
 
@@ -142,17 +144,29 @@ module Passport = {
       ->RegexGroupParser.parse(string)
       ->Option.flatMap(x => x->Array.get(0))
 
-    let byr = "byr"->naiveParser(stringChunk)
-    let iyr = "iyr"->naiveParser(stringChunk)
-    let eyr = "eyr"->naiveParser(stringChunk)
-    let hgt = "hgt"->naiveParser(stringChunk)
-    let hcl = "hcl"->naiveParser(stringChunk)
-    let ecl = "ecl"->naiveParser(stringChunk)
-    let pid = "pid"->naiveParser(stringChunk)
-    let cid = "cid"->naiveParser(stringChunk)
-
-    switch (byr, iyr, eyr, hgt, hcl, ecl, pid, cid) {
-    | (Some(byr), Some(iyr), Some(eyr), Some(hgt), Some(hcl), Some(ecl), Some(pid), cid) =>
+    switch (
+      "byr"->naiveParser(stringChunk),
+      "iyr"->naiveParser(stringChunk),
+      "eyr"->naiveParser(stringChunk),
+      "hgt"->naiveParser(stringChunk),
+      "hcl"->naiveParser(stringChunk),
+      "ecl"->naiveParser(stringChunk),
+      "pid"->naiveParser(stringChunk),
+      switch "cid"->naiveParser(stringChunk){
+      | Some(ParseResString(x)) => Some(x)
+      | _ => None
+      },
+    ) {
+    | (
+        Some(ParseResString(byr)),
+        Some(ParseResString(iyr)),
+        Some(ParseResString(eyr)),
+        Some(ParseResString(hgt)),
+        Some(ParseResString(hcl)),
+        Some(ParseResString(ecl)),
+        Some(ParseResString(pid)),
+        cid,
+      ) =>
       {
         byr: byr,
         iyr: iyr,
