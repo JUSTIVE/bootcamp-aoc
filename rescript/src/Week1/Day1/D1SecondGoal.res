@@ -1,8 +1,8 @@
 open Belt
 open D1Common
-open MSUtil.FileReader
-open MSUtil.Tuple
-open MSUtil.Test
+open Rscv.FileReader
+open Rscv.Tuple
+open Rscv.Test
 
 let solution = filePath =>
   filePath
@@ -11,7 +11,7 @@ let solution = filePath =>
   ->triplize
   ->Array.keep(x => x->isTripleSumThatYear(2020))
   ->Array.map(Tuple3.multiplySelf)
-  ->MSUtil.Math.Int.sum
+  ->Rscv.Math.Int.sum
 
 "input/Week1/Year2020Day1.sample2.txt"->solution->Js.log
 

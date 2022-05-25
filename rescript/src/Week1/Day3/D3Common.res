@@ -1,5 +1,5 @@
 open Belt
-open MSUtil.FileReader
+open Rscv.FileReader
 
 type slant = {
   dx: int,

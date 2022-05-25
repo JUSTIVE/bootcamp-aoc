@@ -14,6 +14,18 @@
   dependencies:
     "@cspotcode/source-map-consumer" "0.8.0"
 
+"@justive/rescriptive@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@justive/rescriptive/-/rescriptive-1.0.0.tgz#55e73876fa8743e269da1a4f285f0f72efb77851"
+  integrity sha512-c/1qGw5BubfobbhJzlFZv0bXE+Yo1w9lhmG8af/b4Wt3f4GxG+y9kW3757TzsuSguXNcNdyJieCQiQrpsPaouA==
+  dependencies:
+    "@rescript/std" "^9.1.4"
+
+"@rescript/std@^9.1.4":
+  version "9.1.4"
+  resolved "https://registry.yarnpkg.com/@rescript/std/-/std-9.1.4.tgz#94971cb504b10d36d470618fa1c6f0a2d03a6b9b"
+  integrity sha512-OHBORysVe6vmyllL24S2sXiwLGrpVRbZW5k2FverbjY3QF81VoyCRYL6kMOSNMEn9GseO/oDubK8+nvVzCSVMA==
+
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"

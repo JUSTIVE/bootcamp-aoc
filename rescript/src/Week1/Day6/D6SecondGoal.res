@@ -1,7 +1,7 @@
 open Belt
 open D6Common
-open MSUtil.FileReader
-open MSUtil.Test
+open Rscv.FileReader
+open Rscv.Test
 
 
 let solution = filePath =>
@@ -10,7 +10,7 @@ let solution = filePath =>
   ->parseFile
   ->Array.map(D6Common.intersection)
   ->Array.map(Belt.Set.String.size)
-  ->MSUtil.Math.Int.sum
+  ->Rscv.Math.Int.sum
 
 "input/Week1/Year2020Day6.sample2.txt"->solution->Js.log
 

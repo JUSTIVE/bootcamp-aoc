@@ -1,7 +1,7 @@
 open Belt
-open MSUtil.FileReader
-open MSUtil.Bool
-open MSUtil.String
+open Rscv.FileReader
+open Rscv.Bool
+open Rscv.String
 
 type rule = {
   least: int,
@@ -38,7 +38,7 @@ let parse = line =>
   )
 
 let validate1 = ({rule, value}) =>
-  value->count(rule.kind)->MSUtil.Math.Int.isInRange((rule.least, rule.most)) //string //int //bool
+  value->count(rule.kind)->Rscv.Math.Int.isInRange((rule.least, rule.most)) //string //int //bool
 
 let validate2 = ({rule, value}) =>
   xor(
@@ -61,6 +61,7 @@ let goal2 = filePath =>
   ->Array.length // int
   ->Js.log //unit
 
+// Belt.Map.String
 "input/Week1/Year2020Day2.sample1.txt"->goal1
 
 "input/Week1/Year2020Day2.sample1.txt"->goal2

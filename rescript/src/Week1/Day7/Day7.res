@@ -20,7 +20,7 @@
 //     switch x {
 //     | Some([_, amount, kind]) =>
 //       amount
-//       ->MSUtil.String.parseInt(10)
+//       ->Rscv.String.parseInt(10)
 //       ->Option.flatMap(amount => Some(Bag({amount: amount, kind: kind})))
 //     | _ => None
 //     }
@@ -37,4 +37,4 @@
 //   }
 // }
 
-// "input/Week1/Year2020Day7.sample1.txt"->MSUtil.FileReader.readFileLine->Array.map(parseLine)->Js.log
+// "input/Week1/Year2020Day7.sample1.txt"->Rscv.FileReader.readFileLine->Array.map(parseLine)->Js.log
