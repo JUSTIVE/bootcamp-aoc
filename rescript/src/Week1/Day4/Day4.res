@@ -152,7 +152,7 @@ module Passport = {
       "hcl"->naiveParser(stringChunk),
       "ecl"->naiveParser(stringChunk),
       "pid"->naiveParser(stringChunk),
-      switch "cid"->naiveParser(stringChunk){
+      switch "cid"->naiveParser(stringChunk) {
       | Some(ParseResString(x)) => Some(x)
       | _ => None
       },

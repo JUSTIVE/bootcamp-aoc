@@ -3,12 +3,6 @@ module ParserResult = {
     | ParseResInt(int)
     | ParseResString(string)
   
-  // let flatMap = (x, f) =>
-  
-  //     switch x {
-  //     | ParseResInt(i) => ParseResInt(i->f)
-  //     | ParseResString(s) => ParseResString(s->f)
-  //     }
 }
 module RegexGroupParser = {
   type t = {
