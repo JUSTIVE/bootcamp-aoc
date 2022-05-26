@@ -1,6 +1,6 @@
 open Belt
-open MSUtil.Array
-open MSUtil.Tuple
+open Rscv.Array
+open Rscv.Tuple
 
 let pairize = args =>
   args->flatMap(x => {

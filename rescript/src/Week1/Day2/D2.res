@@ -1,7 +1,7 @@
 open Belt
-open MSUtil.FileReader
-open MSUtil.Bool
-open MSUtil.String
+open Rscv.FileReader
+open Rscv.Bool
+open Rscv.String
 
 type rule = {
   least: int,
@@ -16,25 +16,29 @@ type parsedLine = {
 
 let parse = line =>
   // 리스크립트 Regex 리팩토링 해보기
-  %re("/(\d)-(\d) (\w): (\w+)/")
-  ->Js.Re.exec_(line)
+  %re("/(\d)-(\d) (\w): (\w+)/") // Js.Re.t
+  ->Js.Re.exec_(line) //option<Js.Re.result>
   ->Option.flatMap(result =>
     switch result->Js.Re.captures->Array.keepMap(Js.toOption) {
     | [_, least, most, kind, value] =>
-      Some({
-        rule: {
-          least: least->Int.fromString->Option.getExn,
-          most: most->Int.fromString->Option.getExn,
-          kind: kind,
-        },
-        value: value,
-      })
+      switch (least->Int.fromString, most->Int.fromString) {
+      | (Some(least), Some(most)) =>
+        Some({
+          rule: {
+            least: least,
+            most: most,
+            kind: kind,
+          },
+          value: value,
+        })
+      | _ => None
+      }
     | _ => None
     }
   )
 
 let validate1 = ({rule, value}) =>
-  value->count(rule.kind)->MSUtil.Math.Int.isInRange(rule.least, rule.most)
+  value->count(rule.kind)->Rscv.Math.Int.isInRange((rule.least, rule.most)) //string //int //bool
 
 let validate2 = ({rule, value}) =>
   xor(
@@ -44,21 +48,20 @@ let validate2 = ({rule, value}) =>
 
 let goal1 = filePath =>
   filePath
-  ->readFileLine
-  ->Array.map(parse)
-  ->Array.keep(Option.isSome)
-  ->Array.keep(x => x->Option.mapWithDefault(false, validate1))
-  ->Array.length
-  ->Js.log
+  ->readFileLine // array<string>
+  ->Array.keepMap(x => x->parse->Option.map(validate1)) // array<bool>
+  ->Array.length // int
+  ->Js.log //unit
 
 let goal2 = filePath =>
-  filePath
-  ->readFileLine
-  ->Array.map(parse)
-  ->Array.keep(x => x->Option.mapWithDefault(false, validate2))
-  ->Array.length
-  ->Js.log
+  filePath // string
+  ->readFileLine // array<string>
+  ->Array.map(parse) // array<parsedLine>
+  ->Array.keep(x => x->Option.mapWithDefault(false, validate2)) // array<bool>
+  ->Array.length // int
+  ->Js.log //unit
 
+// Belt.Map.String
 "input/Week1/Year2020Day2.sample1.txt"->goal1
 
 "input/Week1/Year2020Day2.sample1.txt"->goal2

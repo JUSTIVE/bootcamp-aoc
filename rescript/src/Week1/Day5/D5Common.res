@@ -10,20 +10,6 @@ type arbitraryBinaryPattern = {
   lowerBound: string,
 }
 
-let seat = (row, column) => {
-  {
-    row: row,
-    column: column,
-  }
-}
-
-let arbitraryBinaryPattern = (upperBound, lowerBound) => {
-  {
-    upperBound: upperBound,
-    lowerBound: lowerBound,
-  }
-}
-
 let stringToBinary = (value, arbitraryBinaryPattern) =>
   value
   ->Js.String2.split("")
@@ -33,27 +19,35 @@ let stringToBinary = (value, arbitraryBinaryPattern) =>
     | __ => "0"
     }
   )
-  ->MSUtil.String.join("")
+  ->Rscv.String.join("")
 
-let processSeatID = seat => MSUtil.Math.Int.ma(8, seat.row, seat.column)
+let processSeatID = seat => Rscv.Math.Int.ma(8, seat.row, seat.column)
 
 let parseBoardingPass = boardingPass => {
-  seat(
+  switch (
     boardingPass
     ->Js.String2.slice(~from=0, ~to_=7)
     ->stringToBinary({upperBound: "B", lowerBound: "F"})
-    ->MSUtil.String.parseInt(2),
+    ->Rscv.String.parseInt(2),
     boardingPass
     ->Js.String2.slice(~from=7, ~to_=10)
     ->stringToBinary({upperBound: "R", lowerBound: "L"})
-    ->MSUtil.String.parseInt(2),
-  )
+    ->Rscv.String.parseInt(2),
+  ) {
+  | (Some(row), Some(column)) => Some({row: row, column: column})
+  | _ => None
+  }
 }
 
 let findMissingSeat = seatIDs => {
-  let bias = seatIDs->MSUtil.Array.takeFirstWithDefault(0)
-  seatIDs->Array.keepWithIndex((x, i) => i + bias != x)->MSUtil.Array.takeFirstWithDefault(0) - 1
+  let bias = seatIDs->Rscv.Array.takeFirstWithDefault(0)
+  seatIDs->Array.keepWithIndex((x, i) => i + bias != x)->Rscv.Array.takeFirstWithDefault(0) - 1
 }
 
 let generateSeatID = fileContent =>
-  fileContent->Array.map(parseBoardingPass)->Array.map(processSeatID)->SortArray.Int.stableSort
+  fileContent
+  ->Array.map(parseBoardingPass)
+  ->Array.map(x => x->Option.map(processSeatID))
+  ->Array.keep(Option.isSome)
+  ->Array.map(x => x->Option.getExn)
+  ->SortArray.Int.stableSort

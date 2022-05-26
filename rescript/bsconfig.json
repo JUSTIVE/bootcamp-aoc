@@ -4,5 +4,14 @@
   "sources": {
     "dir": "src",
     "subdirs": true
-  }
+  },
+  "package-specs": [
+    {
+      "module": "es6",
+      "in-source": true
+    }
+  ],
+  "namespace": false,
+  "bs-dependencies": ["@JUSTIVE/Rescriptive"],
+  "generators": []
 }
